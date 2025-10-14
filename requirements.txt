@@ -5,4 +5,4 @@ python-dotenv==1.0.1
 requests==2.32.3
 sanic==24.6.0
 setuptools==75.1.0
-specmatic==2.24.0
+specmatic==2.26.1

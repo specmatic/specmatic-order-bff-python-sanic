@@ -11,8 +11,8 @@ for root, _, files in os.walk(os.path.join(ROOT_DIR, "test/data")):  # noqa: PTH
 
 APP_HOST = "127.0.0.1"
 APP_PORT = 8000
-STUB_HOST = "127.0.0.1"
-STUB_PORT = 8080
+MOCK_HOST = "127.0.0.1"
+MOCK_PORT = 8080
 APP = app
 APP_STR = "api:app"
 
