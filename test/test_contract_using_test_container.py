@@ -41,7 +41,7 @@ def stream_container_logs(container: DockerContainer, name=None):
 
 @pytest.fixture(scope="module")
 def order_api():
-    config = uvicorn.Config(APP_STR, port=APPLICATION_PORT, log_level="info")
+    config = uvicorn.Config(APP_STR,host="0.0.0.0" , port=APPLICATION_PORT, log_level="info")
     server = UvicornServer(config)
     server.start()
     yield server
@@ -78,7 +78,6 @@ def test_container():
         .with_env("SPECMATIC_GENERATIVE_TESTS", "true")
         .with_volume_mapping(specmatic_yaml_path, "/usr/src/app/specmatic.yaml", mode="ro")
         .with_volume_mapping(build_reports_path, "/usr/src/app/build/reports/specmatic", mode="rw")
-        .with_kwargs(network_mode="host")
         .waiting_for(LogMessageWaitStrategy("Tests run:"))
     )
     container.start()
