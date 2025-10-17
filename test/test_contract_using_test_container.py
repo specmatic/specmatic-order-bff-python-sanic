@@ -40,7 +40,7 @@ def stream_container_logs(container: DockerContainer, name=None):
 
 
 @pytest.fixture(scope="module")
-def order_api():
+def api_service():
     config = uvicorn.Config(APP_STR,host="0.0.0.0" , port=APPLICATION_PORT, log_level="info")
     server = UvicornServer(config)
     server.start()
@@ -86,7 +86,7 @@ def test_container():
     container.stop()
 
 
-def test_contract(order_api, stub_container, test_container):
+def test_contract(api_service, stub_container, test_container):
     stdout, stderr = test_container.get_logs()
     stdout = stdout.decode("utf-8")
     stderr = stderr.decode("utf-8")
