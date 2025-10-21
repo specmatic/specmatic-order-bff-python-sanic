@@ -1,6 +1,7 @@
-sources:
-  - provider: git
-    repository: https://github.com/specmatic/specmatic-order-contracts.git
+version: 2
+contracts:
+  - git:
+      url: https://github.com/specmatic/specmatic-order-contracts.git
     provides:
       - io/specmatic/examples/store/openapi/product_search_bff_v4.yaml
     consumes:
@@ -17,4 +18,6 @@ report:
           minThresholdPercentage: 50
           maxMissedEndpointsInSpec: 1
           enforce: true
-        excludedEndpoints: []
+test:
+  resiliencyTests:
+    enable: all
