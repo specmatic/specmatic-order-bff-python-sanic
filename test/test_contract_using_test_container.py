@@ -1,4 +1,6 @@
 import multiprocessing
+import os
+import sys
 import threading
 from pathlib import Path
 
@@ -9,7 +11,7 @@ from testcontainers.core.wait_strategies import HttpWaitStrategy, LogMessageWait
 
 from test import APP_STR
 
-APPLICATION_HOST = "host.docker.internal"
+APPLICATION_HOST = "0.0.0.0"
 APPLICATION_PORT = 5000
 HTTP_STUB_PORT = 8080
 
@@ -41,7 +43,7 @@ def stream_container_logs(container: DockerContainer, name=None):
 
 @pytest.fixture(scope="module")
 def api_service():
-    config = uvicorn.Config(APP_STR,host="0.0.0.0" , port=APPLICATION_PORT, log_level="info")
+    config = uvicorn.Config(APP_STR, host=APPLICATION_HOST, port=APPLICATION_PORT, log_level="info")
     server = UvicornServer(config)
     server.start()
     yield server
@@ -74,10 +76,11 @@ def test_container():
     build_reports_path = Path("build/reports/specmatic").resolve()
     container = (
         DockerContainer("specmatic/specmatic")
-        .with_command(["test", f"--host={APPLICATION_HOST}", f"--port={5000}"])
+        .with_command(["test", "--host=host.docker.internal", f"--port={APPLICATION_PORT}"])
         .with_env("SPECMATIC_GENERATIVE_TESTS", "true")
         .with_volume_mapping(specmatic_yaml_path, "/usr/src/app/specmatic.yaml", mode="ro")
         .with_volume_mapping(build_reports_path, "/usr/src/app/build/reports/specmatic", mode="rw")
+        .with_kwargs(extra_hosts={"host.docker.internal": "host-gateway"})
         .waiting_for(LogMessageWaitStrategy("Tests run:"))
     )
     container.start()
@@ -86,6 +89,10 @@ def test_container():
     container.stop()
 
 
+@pytest.mark.skipif(
+    os.environ.get("CI") == "true" and not sys.platform.startswith("linux"),
+    reason="Run only on Linux CI; all platforms allowed locally",
+)
 def test_contract(api_service, stub_container, test_container):
     stdout, stderr = test_container.get_logs()
     stdout = stdout.decode("utf-8")
