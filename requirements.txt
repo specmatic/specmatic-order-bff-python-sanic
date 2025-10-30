@@ -4,6 +4,6 @@ pytest==8.3.3
 python-dotenv==1.0.1
 requests==2.32.3
 sanic==24.6.0
-setuptools==75.1.0
+setuptools==78.1.1
 specmatic==2.27.0
 testcontainers==4.13.2
