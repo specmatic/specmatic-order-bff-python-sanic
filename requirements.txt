@@ -3,7 +3,7 @@ marshmallow==3.22.0
 pytest==8.3.3
 python-dotenv==1.0.1
 requests==2.32.3
-sanic==24.6.0
+sanic==24.12.0
 setuptools==75.1.0
 specmatic==2.27.0
 testcontainers==4.13.2
