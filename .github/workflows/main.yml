@@ -63,13 +63,13 @@ jobs:
         run: coverage html -d coverage-report
 
       - name: Upload coverage report
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: ${{matrix.os}}-coverage-report
           path: coverage-report
 
       - name: Upload HTML Test Report
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: ${{ matrix.os }}-html-report
           path: build/reports/specmatic/html
