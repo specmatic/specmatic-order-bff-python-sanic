@@ -21,3 +21,5 @@ report:
 test:
   resiliencyTests:
     enable: all
+stub:
+  hotReload: disabled
