@@ -3,7 +3,8 @@ import os
 import pytest
 from specmatic.core.specmatic import Specmatic
 
-from test import APP_STR, ROOT_DIR, MOCK_HOST, MOCK_PORT, expectation_json_files
+from definitions import PROJECT_ROOT_PATH
+from test import APP_STR, PROJECT_ROOT, MOCK_HOST, MOCK_PORT
 
 
 class TestContract:
@@ -22,13 +23,18 @@ def reset_app_config():
     os.environ["API_URL"] = f"http://{MOCK_HOST}:{MOCK_PORT}"
 
 
-Specmatic().with_project_root(ROOT_DIR).with_mock(
-    expectations=expectation_json_files,
-).with_asgi_app(
-    APP_STR,
-    set_app_config_func=set_app_config,
-    reset_app_config_func=reset_app_config,
-).test(TestContract).run()
+(
+    Specmatic(PROJECT_ROOT)
+    .with_specmatic_config_file_path(str(PROJECT_ROOT_PATH / "test" / "resources" / "specmatic_config_for_autowiring.yaml"))
+    .with_mock()
+    .with_asgi_app(
+        APP_STR,
+        set_app_config_func=set_app_config,
+        reset_app_config_func=reset_app_config,
+    )
+    .test(TestContract)
+    .run()
+)
 
 if __name__ == "__main__":
     pytest.main()
