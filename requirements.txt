@@ -1,5 +1,5 @@
 coverage==7.13.5
-marshmallow==4.2.2
+marshmallow==4.2.3
 pytest==8.4.2
 python-dotenv==1.2.2
 requests==2.32.5
