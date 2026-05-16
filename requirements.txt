@@ -1,6 +1,6 @@
 coverage==7.14.0
 marshmallow==4.3.0
-pytest==8.4.2
+pytest==9.0.3
 python-dotenv==1.2.2
 requests==2.34.2
 sanic==25.12.0
