@@ -11,7 +11,7 @@ if TYPE_CHECKING:
 orders = Blueprint("orders")
 
 
-@orders.route("/orders", methods=["POST"])
+@orders.route("/orders", methods=["POST"], ctx_expected_content_type="application/json")
 async def create_order(request: "Request"):
     data: Order = Order.load(request.json)
     order = OrdersService.create_order(data)

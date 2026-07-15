@@ -24,7 +24,7 @@ async def find_available_products(request: "Request"):
     return json(products, status=200)
 
 
-@products.route("/products", methods=["POST"])
+@products.route("/products", methods=["POST"], ctx_expected_content_type="application/json")
 async def add_product(request: "Request"):
     data: Product = Product.load(request.json)
     product = ProductService.create_product(data)
