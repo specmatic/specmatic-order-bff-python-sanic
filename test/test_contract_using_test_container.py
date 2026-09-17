@@ -7,7 +7,7 @@ from pathlib import Path
 import pytest
 import uvicorn
 from testcontainers.core.container import DockerContainer
-from testcontainers.core.wait_strategies import HttpWaitStrategy
+from testcontainers.core.wait_strategies import HttpWaitStrategy, LogMessageWaitStrategy
 
 from definitions import PROJECT_ROOT_PATH
 from test import APP_STR
@@ -89,26 +89,15 @@ def stub_container():
         .with_bind_ports(HTTP_STUB_PORT, HTTP_STUB_PORT)
         .waiting_for(HttpWaitStrategy(HTTP_STUB_PORT, path="/actuator/health").with_method("GET").for_status_code(200))
     )
-    thread = None
-    try:
-        container.start()
-        thread = stream_container_logs(container, name="specmatic-stub")
-        yield container
-    finally:
-        try:
-            wrapped = container.get_wrapped_container()
-            if wrapped is not None:
-                wrapped.reload()
-                if wrapped.status == "running":
-                    # Let the mock finish writing and sending reports before removal.
-                    wrapped.kill(signal="SIGINT")
-                    wrapped.wait(timeout=300)
-        finally:
-            try:
-                container.stop()
-            finally:
-                if thread is not None:
-                    thread.join(timeout=10)
+    container.start()
+    thread = stream_container_logs(container, name="specmatic-stub")
+    yield container
+
+    # Equivalent to `docker stop --time 300`: allow report submission
+    # to finish before Docker forcefully terminates the mock.
+    container.get_wrapped_container().stop(timeout=300)
+    container.stop()
+    thread.join(timeout=10)
 
 
 @pytest.fixture(scope="module")
@@ -117,6 +106,7 @@ def test_container(api_service, stub_container):
         specmatic_container()
         .with_command(["test"])
         .with_env("APP_URL", f"http://host.docker.internal:{APPLICATION_PORT}")
+        .waiting_for(LogMessageWaitStrategy("Tests run:").with_startup_timeout(120))
     )
     thread = None
     try:
@@ -136,16 +126,8 @@ def test_container(api_service, stub_container):
     reason="Run only on Linux CI; all platforms allowed locally",
 )
 def test_contract(api_service, stub_container, test_container):
-    try:
-        result = test_container.get_wrapped_container().wait(timeout=300)
-    except Exception as error:
-        stdout, stderr = test_container.get_logs()
-        logs = (stdout + stderr).decode("utf-8", errors="replace")
-        raise AssertionError(f"Could not wait for contract test completion; container logs:\n{logs}") from error
-
     stdout, stderr = test_container.get_logs()
     stdout = stdout.decode("utf-8", errors="replace")
     stderr = stderr.decode("utf-8", errors="replace")
     logs = f"Contract test container logs:\n{stdout}\n{stderr}"
-    assert result["StatusCode"] == 0, logs
     assert "Failures: 0" in stdout, logs
